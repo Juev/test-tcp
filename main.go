@@ -110,7 +110,7 @@ func server() {
 		conn, err := listener.Accept()
 		if err != nil {
 			log.Println(err)
-			break
+			continue
 		}
 
 		go handleConnection(conn)
