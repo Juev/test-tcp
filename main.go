@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// Config type
 type Config struct {
 	Host string
 	Port int
@@ -48,7 +49,10 @@ func main() {
 	log.Println("Using config file: ", *cfg)
 	if _, err := toml.DecodeFile(*cfg, &config); err != nil {
 		log.Fatal(err)
-		return
+	}
+
+	if config.Host == "" || config.Port == 0 {
+		log.Fatal("Host and Port must be present in config file, and not be \"\" and 0 value")
 	}
 
 	port = strconv.Itoa(config.Port)
@@ -71,23 +75,21 @@ func main() {
 
 func client() {
 	for {
+		time.Sleep(1 * time.Second)
 		conn, err := net.Dial("tcp", host+":"+port)
 		if err != nil {
 			log.Println("Something wrong: ", err)
+			continue
 		}
 		defer func() {
-			if conn != nil {
-				conn.Close()
-				log.Println("Connection closed")
-			}
+			conn.Close()
+			log.Println("Connection closed")
 		}()
-		if conn != nil {
-			// send to socket
-			conn.Write([]byte("Ping\n"))
-			// listen for reply
-			message, _ := bufio.NewReader(conn).ReadString('\n')
-			log.Print("Message from server: " + message)
-		}
+		// send to socket
+		conn.Write([]byte("Ping\n"))
+		// listen for reply
+		message, _ := bufio.NewReader(conn).ReadString('\n')
+		log.Print("Message from server: " + message)
 	}
 }
 
